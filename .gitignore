@@ -1,0 +1,6 @@
+images/
+.vscode/
+Pruebas
+model_value_1024.h5
+model_value.h5
+.DS_Store
