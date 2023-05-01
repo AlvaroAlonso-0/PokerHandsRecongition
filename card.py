@@ -8,14 +8,8 @@ def recognise(card):
     return f'{final_value} - {final_suit}'
 
 # Load image
-img = cv2.imread('images/training/IMG_1694.jpeg')
+img = cv2.imread('images/IMG_1482.jpeg')
 back = cv2.imread('images/templates/back2.png')
-
-# Load templates
-suits = ['clubs', 'diamonds', 'hearts', 'spades']
-values = ['ace', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'jack', 'queen', 'king']
-suit_templates = {suit: cv2.imread(f'images/templates/{suit}.png',0) for suit in suits}
-value_templates = {value: cv2.imread(f'images/templates/{value}.png',0) for value in values}
 
 # Convert to grayscale
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -101,7 +95,7 @@ for i, card in enumerate(cards):
         rect_img = np.zeros((y,x, 3), np.uint8)
         rect_img[0:y, 0:x] = rect
         
-        cv2.imshow('Card ' + str(i+1)+ '.png', rect_img)
-        cv2.waitKey(0)
+        cv2.imwrite('Card ' + str(i+1)+ '.png', rect_img)
+        #cv2.waitKey(0)
         
 cv2.destroyAllWindows()
