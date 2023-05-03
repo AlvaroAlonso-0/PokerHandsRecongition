@@ -1,7 +1,24 @@
 import random
 from itertools import combinations
 
-NUM_SIMULATIONS=10000
+NUM_SIMULATIONS=100000
+card_types = {'C': 0, 'D': 1, 'H': 2, 'S': 3}
+card_values = {'A': 0, '2': 1, '3': 2, '4': 3, '5': 4, '6': 5, '7': 6, '8': 7, '9': 8, '10': 9, 'J': 10, 'Q': 11, 'K': 12}
+
+
+def decode(cards):    
+    decoded_cards = []
+    for card in cards:
+        card_type = card[0]
+        card_value = card[1:]
+        
+        if card_value not in card_values:
+            raise ValueError("Invalid card value")
+        
+        number = card_types[card_type] * 13 + card_values[card_value]
+        decoded_cards.append(number)
+    
+    return decoded_cards
 
 def evaluate(cards):
     # Separate the pocket cards and community cards
@@ -89,7 +106,9 @@ def hand_value(hand):
 
     return (rank, value, kicker)
 
-def simulate_game(pocket_cards, community_cards):
+def simulate_game(coded_pocket_cards, coded_community_cards):
+    pocket_cards = [decode(coded_pocket_cards[0]),decode(coded_pocket_cards[1])]
+    community_cards = decode(coded_community_cards)
     # If pocket_cards or community_cards are bigger than 2 or 5 respectively, raise an error
     if len(pocket_cards[0]) != 2 or len(community_cards) > 5:
         raise ValueError('Invalid number of cards')
@@ -129,10 +148,3 @@ def simulate_game(pocket_cards, community_cards):
     
     # Divide the counts by the number of simulations to get the probabilities
     return [round(count / NUM_SIMULATIONS, 6) for count in counts]
-
-pocket_cards = [[22,23], [10,37], [35,36]] # Three players, each with two pocket cards
-community_cards = [51,14,28,24,23] # The five community cards
-#community_cards = [12,8,0] # The five community cards
-probabilities = simulate_game(pocket_cards, community_cards)
-
-print(probabilities)

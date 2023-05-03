@@ -4,3 +4,5 @@ Pruebas
 model_value_1024.h5
 model_value.h5
 .DS_Store
+model_fulldeck.h5
+__pycache__/
