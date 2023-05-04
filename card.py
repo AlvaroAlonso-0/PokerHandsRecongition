@@ -2,11 +2,12 @@ import cv2
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras.preprocessing import image
+from tensorflow.keras.preprocessing import image # type: ignore
 
 class_list = ['C10', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'CA', 'CJ', 'CK', 'CQ', 'D10', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'DA', 'DJ', 'DK', 'DQ', 'H10', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8', 'H9', 'HA', 'HJ', 'HK', 'HQ', 'S10', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'SA', 'SJ', 'SK', 'SQ']
-model = keras.models.load_model('model_fulldeck.h5')
+model = keras.models.load_model('model_fulldeck.h5') # type: ignore
 
+# TODO: change top to 1 and add color diff
 # Custom decode for predictions
 def decode_predictions_custom(preds, top=3, color=None):        
     results = []
