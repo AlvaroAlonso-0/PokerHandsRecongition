@@ -147,4 +147,4 @@ def simulate_game(coded_pocket_cards, coded_community_cards):
             return counts
     
     # Divide the counts by the number of simulations to get the probabilities
-    return [round(count / NUM_SIMULATIONS, 6) for count in counts]
+    return [count / NUM_SIMULATIONS for count in counts]

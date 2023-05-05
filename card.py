@@ -4,16 +4,13 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.preprocessing import image # type: ignore
 
-class_list = ['C10', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'CA', 'CJ', 'CK', 'CQ', 'D10', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'DA', 'DJ', 'DK', 'DQ', 'H10', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8', 'H9', 'HA', 'HJ', 'HK', 'HQ', 'S10', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'SA', 'SJ', 'SK', 'SQ']
+class_list = ['B','C10', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'CA', 'CJ', 'CK', 'CQ', 'D10', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'DA', 'DJ', 'DK', 'DQ', 'H10', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8', 'H9', 'HA', 'HJ', 'HK', 'HQ', 'S10', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'SA', 'SJ', 'SK', 'SQ']
 model = keras.models.load_model('model_fulldeck.h5') # type: ignore
 
-# TODO: change top to 1 and add color diff
 # Custom decode for predictions
-def decode_predictions_custom(preds, top=3, color=None):        
+def decode_predictions_custom(preds, top=3):        
     results = []
-    
-    #TODO: add color diff
-    
+        
     for pred in preds:
         top_indices = pred.argsort()[-top:][::-1]
         result = [(class_list[i], pred[i]*100.0) for i in top_indices]
@@ -22,29 +19,17 @@ def decode_predictions_custom(preds, top=3, color=None):
 
 # Recognise cards from the image 
 def recognise_cards(img):
-    back = cv2.imread('images/back.png')
-
     # Convert to grayscale
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    gray_back = cv2.cvtColor(back, cv2.COLOR_BGR2GRAY)
     _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-    # Detector and descriptor for matching cards
-    detector = cv2.ORB_create()
-
-    # Matcher
-    matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
-
-    # Back key points and descriptors
-    back_kp, back_desc = detector.detectAndCompute(gray_back, None)
 
     # Filter contours to only keep those that correspond to cards
     cards = []
     prev_area = 0
     for contour in contours:
         area = cv2.contourArea(contour)
-        if area > 10000:  # adjust this threshold to filter out small contours
+        if area > 50000:  # adjust this threshold to filter out small contours
             perimeter = cv2.arcLength(contour, True)
             approx = cv2.approxPolyDP(contour, 0.02 * perimeter, True)
             # card contours have four corners and if is smaller than the previous card is a figure
@@ -78,48 +63,33 @@ def recognise_cards(img):
         x, y, w, h = cv2.boundingRect(transformed_box)
         card_img = rotated[y:y+h, x:x+w]
 
-        # Convert to grayscale
-        grey_card = cv2.cvtColor(card_img, cv2.COLOR_BGR2GRAY)
-        
-        # Calculate the key points and descriptors for the card
-        card_kp, card_desc = detector.detectAndCompute(grey_card, None)
-        
-        # Match the card to the back
-        matches = matcher.match(card_desc, back_desc)
-        matches = sorted(matches, key=lambda x: x.distance)
-        
-        # Calculate the similarity between the card and the back
-        similarity = sum(1 for m in matches if m.distance < 0.35 * len(back_kp)) / len(back_kp)
-        
-        print('Similarity: ' + str(similarity))
-            
-        if(similarity > 0.35):
-            print('Back')
-        else:
-            # Get the top left corner of the card
-            height, width, _ = card_img.shape
-            x = int(0.12 * height)
-            y = int(0.40 * width)
+        # Get the top left corner of the card
+        height, width, _ = card_img.shape
+        x = int(0.12 * height)
+        y = int(0.40 * width)
 
-            # Create a new image with the left corner of the card        
-            rect = card_img[0:y, 0:x]
-            rect_img = np.zeros((y,x, 3), np.uint8)
-            rect_img[0:y, 0:x] = rect
-            
-            # Call model
-            var_resized = cv2.resize(rect_img, (150, 224))
+        # Create a new image with the left corner of the card        
+        rect = card_img[0:y, 0:x]
+        rect_img = np.zeros((y,x, 3), np.uint8)
+        rect_img[0:y, 0:x] = rect
+        
+        # Call model
+        var_resized = cv2.resize(rect_img, (150, 224))
 
-            var_resized = image.img_to_array(var_resized)
-            var_resized = np.expand_dims(var_resized, axis=0)
-            var_resized = tf.keras.applications.imagenet_utils.preprocess_input(var_resized)
-            prediction = model.predict(var_resized)
+        var_resized = image.img_to_array(var_resized)
+        var_resized = np.expand_dims(var_resized, axis=0)
+        var_resized = tf.keras.applications.imagenet_utils.preprocess_input(var_resized)
+        prediction = model.predict(var_resized)
 
-            print(decode_predictions_custom(prediction))
-            
-            predicted_cards.append(decode_predictions_custom(prediction)[0][0][0])
-            
-            cv2.imshow('Card ' + str(i+1)+ '.png', rect_img)
-            cv2.waitKey(0)
+        print(decode_predictions_custom(prediction))
+        
+        prediction = decode_predictions_custom(prediction)[0][0][0]
+        
+        if prediction != 'B':
+            predicted_cards.append(prediction)
+        
+        cv2.imshow('Card ' + str(i+1)+ '.png', rect_img)
+        cv2.waitKey(0)
         
     cv2.destroyAllWindows()
     

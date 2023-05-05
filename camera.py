@@ -6,9 +6,9 @@ from montecarlo import *
 # with the device index set to 1 to use the iPhone camera
 cap = cv2.VideoCapture(1)
 
-# Set the video resolution to 1280x720
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+# Set the video resolution to 1920x1080
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
 
 # Loop over the video frames
 while True:
@@ -23,7 +23,8 @@ while True:
     if key == ord('p'):
         print('Recognising cards...')
         cv2.imwrite('images/table.png', frame.copy())
-        cards = recognise_cards(cv2.imread('images/IMG_1452.jpeg'))
+        table = cv2.imread('images/table.png')
+        cards = recognise_cards(cv2.imread('images/table.png'))
         
         # Check if repeated cards
         if(len(cards) != len(set(cards))):
@@ -31,29 +32,32 @@ while True:
             continue
         
         # Get the pocket cards and community cards        
-        pocket_cards_h1 = cards[-2:]
-        pocket_cards_h2 = cards[-4:-2]
+        pocket_cards_h2 = cards[-2:]
+        pocket_cards_h1 = cards[-4:-2]
         community_cards = cards[:-4]
         
         print('Simulating game...')
         simulation = simulate_game([pocket_cards_h1,pocket_cards_h2], community_cards)
         
-        
+        stage = ''
         # Stage of the game
         if(len(community_cards) == 0):
-            print('Pre-flop')
+            stage = ('Pre-flop')
         elif(len(community_cards) == 3):
-            print('Flop')
+            stage = ('Flop')
         elif(len(community_cards) == 4):
-            print('Turn')
+            stage = ('Turn')
         elif(len(community_cards) == 5):
-            print('River')
-            
-        print(f'Hand 1 {str(pocket_cards_h1)}: {simulation[0]*100}%')
-        print(f'Hand 2 {str(pocket_cards_h2)}: {simulation[1]*100}%')
-        print(f'Draw: {simulation[2]*100}%')
-        print('Community: ' + str(community_cards))
+            stage = ('River')
         
+        cv2.putText(table, f'Hand 1 {str(pocket_cards_h1[::-1])}: {round(simulation[0]*100, 4)}%', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        cv2.putText(table, f'Hand 2 {str(pocket_cards_h2[::-1])}: {round(simulation[1]*100, 4)}%', (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        cv2.putText(table, f'Draw: {round(simulation[2]*100, 4)}%', (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        cv2.putText(table, 'Community: ' + str(community_cards[::-1]), (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        cv2.putText(table, f'Stage: {stage}', (10, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        cv2.imshow('Recognised Game', table)
+        cv2.imwrite('images/table_solved.png', table)
+        cv2.waitKey(0)
     
     # Check if the user has pressed the "q" key to quit
     if key & 0xFF == ord('q'):

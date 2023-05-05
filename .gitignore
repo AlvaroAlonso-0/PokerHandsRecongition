@@ -1,4 +1,5 @@
-images/
+images/*jpeg
+images/table*.png
 .vscode/
 Pruebas
 model_value_1024.h5
