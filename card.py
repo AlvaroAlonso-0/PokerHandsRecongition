@@ -88,8 +88,8 @@ def recognise_cards(img):
         if prediction != 'B':
             predicted_cards.append(prediction)
         
-        cv2.imshow('Card ' + str(i+1)+ '.png', rect_img)
-        cv2.waitKey(0)
+        #cv2.imshow('Card ' + prediction+ '.png', rect_img)
+        #cv2.waitKey(0)
         
     cv2.destroyAllWindows()
     
