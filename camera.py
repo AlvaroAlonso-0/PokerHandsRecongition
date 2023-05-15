@@ -52,11 +52,18 @@ def main():
     # Set the video resolution to 1920x1080
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+    
+    # Print key bindings
+    print('Press "p" to take a screenshot of the frame and start the analysis')
+    print('Press "q" to quit')
+
+    # Number of tables analysed
+    n_tables = 0
 
     # Loop over the video frames
     while True:
         # Read a frame from the video stream
-        ret, frame = cap.read()
+        _, frame = cap.read()
             
         # Display the frame in a window named "iPhone Camera"
         cv2.imshow('iPhone Camera', frame)
@@ -65,8 +72,9 @@ def main():
         # Take a screenshot of the frame and call the recognise_cards function
         if key == ord('p'):
             print('Recognising cards...')
-            cv2.imwrite('images/table.png', frame.copy())
-            game('images/table.png')
+            n_tables += 1
+            cv2.imwrite(f'images/table_{n_tables}.png', frame.copy())
+            game(f'images/table_{n_tables}.png')
             
         
         # Check if the user has pressed the "q" key to quit

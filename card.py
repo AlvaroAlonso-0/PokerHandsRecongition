@@ -36,11 +36,11 @@ def recognise_cards(img):
             if len(approx) == 4 and area-prev_area > -100000:
                 cards.append(contour)
                 prev_area = area
-                        
+                
     predicted_cards = []                    
     
     # Rotate and display each card
-    for i, card in enumerate(cards):
+    for _, card in enumerate(cards):
         # Get the rotated bounding box of the card contour
         rect = cv2.minAreaRect(card)
         box = cv2.boxPoints(rect)
@@ -83,13 +83,11 @@ def recognise_cards(img):
 
         print(decode_predictions_custom(prediction))
         
+        # Decode prediction and add to list
         prediction = decode_predictions_custom(prediction)[0][0][0]
         
         if prediction != 'B':
             predicted_cards.append(prediction)
-        
-        #cv2.imshow('Card ' + prediction+ '.png', rect_img)
-        #cv2.waitKey(0)
         
     cv2.destroyAllWindows()
     
